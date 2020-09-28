@@ -3,7 +3,7 @@ import React from 'react';
 import UsersList from '../components/UsersList';
 
 const Users = ()=>{
-    const USERS = [{id:'u1', name:"Sensei", image:"https://geekculture.co/wp-content/uploads/2018/03/karate-kid-sequel-cobra-kai-johnny-featured-886x500.jpg", places:3}];
+    const USERS = [{id:'u1', name:"Sensei", image:"https://i.pinimg.com/originals/f5/f8/3a/f5f83a9cf722d486b859f623d298b2dc.jpg", places:3}];
 
     return <UsersList items={USERS}/>
 };
