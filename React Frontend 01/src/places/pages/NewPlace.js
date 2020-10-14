@@ -7,7 +7,7 @@ import {
   VALIDATOR_MINLENGTH,
   VALIDATOR_REQUIRE,
 } from "../../shared/util/validators";
-import "./NewPlace.css";
+import "./PlaceForm.css";
 
 const formReducer = (state, action) => {
   switch (action.type) {
@@ -37,7 +37,8 @@ const NewPlace = () => {
   const [formState, dispatch] = useReducer(formReducer, {
     inputs: {
       title: { value: "", isValid: false },
-      description: { value: "", isValid: false }
+      description: { value: "", isValid: false },
+      address: { value: "", isValid: false }
     },
     isValid: false
   });
@@ -78,7 +79,7 @@ const NewPlace = () => {
         <Input
         id="address"
         element="input"
-        label="Description"
+        label="Adress"
         validators={[VALIDATOR_REQUIRE()]}
         errorText="Please enter a valid address."
         onInput={inputHandler}
