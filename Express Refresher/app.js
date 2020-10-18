@@ -1,31 +1,32 @@
-const http = require("http");
+const express = require("express");
+//const bodyParser = require("body-parser");
 
-const server = http.createServer((req, res) => {
-  console.log("Incoming Request");
-  console.log(req.method, req.url);
+const app = express();
 
-  if (req.method === 'POST') {
-      let body='';
+//app.use(bodyParser.urlencoded({ extended: false }));
 
-      req.on('end', ()=>{
+app.use((req, res, next) => {
+  let body = "";
+  req.on("end", () => {
+    const userName = body.split("=")[1];
+    if (userName) {
+      req.body = { name: userName };
+    }
+    next();
+  });
+  req.on("data", (chunk) => {
+    body += chunk;
+  });
+});
 
-        const userName=body.split('=')[1];
-
-        console.log(body);
-
-        res.end("<h1>"+userName+"</h1>");
-    });
-
-      req.on('data', (chunk)=>{
-         body+=chunk
-      });
-
+app.use((req, res, next) => {
+  if (req.body) {
+    res.send(`<h1> ${req.body.name} is cool </h1>`);
   } else {
-    res.setHeader("Content-Type", "text/html");
-    res.end(
-      '<form method="POST"><input type="text" name="username"></input><button>Create User</button></form>'
+    res.send(
+      '<form method="POST"><input type="text" name="username"></input><button type="submit">Create User</button></form>'
     );
   }
 });
 
-server.listen(5000);
+app.listen(5000);
