@@ -1,7 +1,7 @@
 const HttpError = require('../models/http-error');
 const {v4: uuid} = require('uuid');
 
-const DUMMY_PLACES = [
+let DUMMY_PLACES = [
     {
       id: "p1",
       title: "Empire State Building",
@@ -104,9 +104,7 @@ const deletePlace=(req, res, next)=>{
 
   if(place){
 
-    const placeIndex = DUMMY_PLACES.findIndex((place)=>{return place.id===placeId});
-
-    delete DUMMY_PLACES[placeIndex];
+    DUMMY_PLACES = DUMMY_PLACES.filter((place)=>{return place.id!==placeId});
 
     console.log(DUMMY_PLACES);
 
