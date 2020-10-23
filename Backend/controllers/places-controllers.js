@@ -62,13 +62,67 @@ const createPlace = (req, res, next)=>{
     address,
     creator
   };
-
   DUMMY_PLACES.push(createdPlace);
-
   res.status(201).json(createdPlace);
+};
+
+const updatePlace = (req, res, next)=>{
+
+    const placeId = req.params.pid;
+    const place = DUMMY_PLACES.find((place) => {
+      return place.id === placeId;
+    });
+
+    if(place){
+
+      const {title, description} = req.body;
+
+      const placeIndex = DUMMY_PLACES.findIndex((place)=>{return place.id===placeId});
+
+      const updatedPlace = {...place, title, description};
+
+      DUMMY_PLACES[placeIndex]=updatedPlace;
+
+      console.log(DUMMY_PLACES);
+
+      res.status(200).json(updatedPlace);
+
+    } else {
+
+      res.status(404).send('Place not found');
+
+    }
+};
+
+const deletePlace=(req, res, next)=>{
+
+  const placeId = req.params.pid;
+
+  const place = DUMMY_PLACES.find((place) => {
+    return place.id === placeId;
+  });
+
+  if(place){
+
+    const placeIndex = DUMMY_PLACES.findIndex((place)=>{return place.id===placeId});
+
+    delete DUMMY_PLACES[placeIndex];
+
+    console.log(DUMMY_PLACES);
+
+    res.status(200).json(placeId);
+
+  } else {
+
+    res.status(404).send('Place not found');
+
+  }
 
 };
 
+
+  exports.updatePlace=updatePlace;
+  exports.deletePlace=deletePlace;
   exports.getPlaceById=getPlaceById;
   exports.getPlaceByUserId=getPlaceByUserId;
   exports.createPlace=createPlace;
