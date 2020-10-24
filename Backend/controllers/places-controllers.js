@@ -40,7 +40,7 @@ const getPlacesByUserId = (req, res, next) => {
       return place.creator === userId;
     });
   
-    if (places===0) {
+    if (!places || places===0) {
       return next(
         new HttpError("Could not find places for the provided user id",
          404)
