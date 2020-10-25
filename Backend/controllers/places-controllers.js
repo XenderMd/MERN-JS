@@ -89,7 +89,7 @@
     res.status(201).json(createdPlace);
     
   } else {
-      next (new HttpError("Invalid inputs - please check your data", 422));
+      return next (new HttpError("Invalid inputs - please check your data", 422));
   }
 
 
