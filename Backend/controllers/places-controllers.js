@@ -1,7 +1,8 @@
-const HttpError = require('../models/http-error');
-const {v4: uuid} = require('uuid');
+  const HttpError = require('../models/http-error');
+  const {validationResult} = require('express-validator');
+  const {v4: uuid} = require('uuid');
 
-let DUMMY_PLACES = [
+  let DUMMY_PLACES = [
     {
       id: "p1",
       title: "Empire State Building",
@@ -17,56 +18,66 @@ let DUMMY_PLACES = [
   ];
 
 
-const getPlaceById = (req, res, next) => {
+  const getPlaceById = (req, res, next) => {
     const placeId = req.params.pid;
     const place = DUMMY_PLACES.find((place) => {
       return place.id === placeId;
     });
-  
+
     if (!place) {
       throw new HttpError(
         "Could not find the place for the provided place id",
         404
       );
     }
-  
+
     res.json(place);
   };
 
 
-const getPlacesByUserId = (req, res, next) => {
+  const getPlacesByUserId = (req, res, next) => {
     const userId = req.params.uid;
     const places = DUMMY_PLACES.filter((place) => {
       return place.creator === userId;
     });
-  
+
     if (!places || places===0) {
       return next(
         new HttpError("Could not find places for the provided user id",
-         404)
+          404)
       );
     }
-  
+
     res.json(places);
   };
 
-const createPlace = (req, res, next)=>{
-  
-  const {title, description, coordinates, address, creator} = req.body;
+  const createPlace = (req, res, next)=>{
 
-  const createdPlace={
-    id: uuid(),
-    title,
-    description,
-    location:coordinates,
-    address,
-    creator
+  const errors=validationResult(req);
+
+
+  if (!errors) {
+
+    const { title, description, coordinates, address, creator } = req.body;
+    const createdPlace = {
+      id: uuid(),
+      title,
+      description,
+      location: coordinates,
+      address,
+      creator,
+    };
+
+    DUMMY_PLACES.push(createdPlace);
+    res.status(201).json(createdPlace);
+  } else {
+      throw(new HttpError("Invalid inputs - please check your data", 422));
+  }
+
+
   };
-  DUMMY_PLACES.push(createdPlace);
-  res.status(201).json(createdPlace);
-};
 
-const updatePlace = (req, res, next)=>{
+  const updatePlace = (req, res, next)=>{
 
     const placeId = req.params.pid;
     const place = DUMMY_PLACES.find((place) => {
@@ -92,9 +103,9 @@ const updatePlace = (req, res, next)=>{
       res.status(404).send('Place not found');
 
     }
-};
+  };
 
-const deletePlace=(req, res, next)=>{
+  const deletePlace=(req, res, next)=>{
 
   const placeId = req.params.pid;
 
@@ -116,7 +127,7 @@ const deletePlace=(req, res, next)=>{
 
   }
 
-};
+  };
 
 
   exports.updatePlace=updatePlace;
