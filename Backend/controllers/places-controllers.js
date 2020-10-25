@@ -79,29 +79,33 @@
 
   const updatePlace = (req, res, next)=>{
 
-    const placeId = req.params.pid;
-    const place = DUMMY_PLACES.find((place) => {
-      return place.id === placeId;
-    });
+    const errors = validationResult(req);
 
-    if(place){
+    if (!errors) {
+        const placeId = req.params.pid;
+        const place = DUMMY_PLACES.find((place) => {
+        return place.id === placeId;
+      });
 
-      const {title, description} = req.body;
+      if (place) {
+        
+        const { title, description } = req.body;
+        const placeIndex = DUMMY_PLACES.findIndex((place) => {
+          return place.id === placeId;
+        });
 
-      const placeIndex = DUMMY_PLACES.findIndex((place)=>{return place.id===placeId});
+        const updatedPlace = { ...place, title, description };
 
-      const updatedPlace = {...place, title, description};
+        DUMMY_PLACES[placeIndex] = updatedPlace;
 
-      DUMMY_PLACES[placeIndex]=updatedPlace;
+        console.log(DUMMY_PLACES);
 
-      console.log(DUMMY_PLACES);
-
-      res.status(200).json(updatedPlace);
-
+        res.status(200).json(updatedPlace);
+      } else {
+        res.status(404).send("Place not found");
+      }
     } else {
-
-      res.status(404).send('Place not found');
-
+      throw(new HttpError("Invalid request - please cehck your place data", 422));
     }
   };
 
