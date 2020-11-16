@@ -5,6 +5,7 @@ const { v4: uuid } = require("uuid");
 const getCoordsForAddress = require("../util/location");
 const Place = require("../models/place");
 const { create } = require("../models/place");
+const place = require("../models/place");
 
 let DUMMY_PLACES = [
   {
@@ -134,24 +135,27 @@ const updatePlace = async (req, res, next) => {
 
 };
 
-const deletePlace = (req, res, next) => {
+const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
+  let place;
 
-  const place = DUMMY_PLACES.find((place) => {
-    return place.id === placeId;
-  });
-
-  if (place) {
-    DUMMY_PLACES = DUMMY_PLACES.filter((place) => {
-      return place.id !== placeId;
-    });
-
-    console.log(DUMMY_PLACES);
-
-    res.status(200).json(placeId);
-  } else {
-    res.status(404).send("Place not found");
+  try {
+     place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError( 'Something went wrong - could not delete place', 500);
+    return next(error);
   }
+
+  try {
+    if(place){
+      await place.remove();
+    }
+  } catch (err) {
+    const error = new HttpError( 'Something went wrong - could not delete place', 500);
+    return next(error);
+  }
+
+    res.status(200).json({message:'Deleted place.'});
 };
 
 exports.updatePlace = updatePlace;
