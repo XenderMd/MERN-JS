@@ -65,29 +65,35 @@ const userSignup = async (req, res, next) => {
     }
 };
 
-const userLogin = (req, res, next) => {
+const userLogin = async (req, res, next) => {
 
   const errors = validationResult(req);
+
   if(errors.isEmpty()){
-  const { email, password } = req.body;
 
-  const user = DUMMY_USERS.find((user) => {
-    return user.email === email;
-  });
+    const { email, password } = req.body;
 
-  if (user) {
-    if (user.password === password) {
-      return res.status(202).send("Login successful !");
-    } else {
-      return res
-        .status(401)
-        .send("Login unsuccessful - please check your password ! ");
+    let existingUser;
+
+    try {
+     existingUser= await User.findOne({email});
+    } catch (err) {
+      const error = new HttpError('Login failed - please try again later', 500);
+      return next(error);
     }
+
+    if(!existingUser||existingUser.password!==password){
+      const error = new HttpError('Login failed - invalid email and/or password', 401);
+      return next(error);
+    } 
+    
   } else {
-    return res.status(404).send("Login unsuccessful - user not found");
-  }}else{
-      throw (new HttpError('Invalid login data', 422));
+    const error = new HttpError('Login failed - invalid email and/or password', 401);
+    return next(error);
   }
+
+  res.status(200).json({message:"Login succesful"});
+
 };
 
 exports.getUsers = getUsers;
