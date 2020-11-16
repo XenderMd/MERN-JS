@@ -1,6 +1,9 @@
-const HttpError = require("../models/http-error");
 const { v4: uuid } = require("uuid");
 const {validationResult}=require('express-validator');
+
+const HttpError = require("../models/http-error");
+const User = require('../models/user');
+const e = require("express");
 
 let DUMMY_USERS = [
   {
@@ -16,36 +19,49 @@ const getUsers = (req, res, next) => {
   res.status(200).send(DUMMY_USERS);
 };
 
-const userSignup = (req, res, next) => {
+const userSignup = async (req, res, next) => {
 
     const errors = validationResult(req);
 
     if (errors.isEmpty()) {
 
-      const { email, password, image, name } = req.body;
-      const foundUser = DUMMY_USERS.find((user) => {
-        return user.email === email;
+      const { email, password, image, name, places } = req.body;
+      let existingUser;
+
+      try {
+         existingUser= await User.findOne({email});
+      } catch (err) {
+          const error = new HttpError('Signing up failed - please try again later', 500);
+          return next(error);
+      }
+
+      if(existingUser){
+        const error = new HttpError('User exists already - please login instead', 422);
+        return next(error);
+      }
+
+      const createdUser = new User({
+        name,
+        email,
+        image: 'https://static.wikia.nocookie.net/thekaratekid/images/9/9e/John_Kreese_Karate_Kid.png/revision/latest?cb=20190430011315',
+        password,
+        places
       });
 
-      if (foundUser) {
-        return res.status(402).send("Email already in use !");
-      } else {
-        const newUser = {
-          id: uuid(),
-          email,
-          password,
-          name,
-          image,
-        };
-
-        DUMMY_USERS.push(newUser);
-
-        console.log(DUMMY_USERS);
-
-        res.status(201).send("Signup succesful !");
+      try {
+        await createdUser.save();
+      } catch (err) {
+        const error = new HttpError(
+          "Signing up failed - please try again later",
+          500
+        );
+        return next(error);
       }
+      
+      res.status(201).json({user:createdUser.toObject({getters:true})});
+      
     } else {
-      throw new HttpError("Invalid singup data", 422);
+      return next(new HttpError("Invalid singup data", 422));
     }
 };
 
