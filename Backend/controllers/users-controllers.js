@@ -15,8 +15,20 @@ let DUMMY_USERS = [
   },
 ];
 
-const getUsers = (req, res, next) => {
-  res.status(200).send(DUMMY_USERS);
+const getUsers = async (req, res, next) => {
+
+  let users;
+
+  try {
+    users = await User.find({}, 'email name')
+  } catch (err) {
+    const error = new HttpError('Something went wrong - could not fetching users', 500);
+    return next(error);
+  }
+
+
+
+  res.status(200).json({users: users.map((user)=>{return user.toObject({getters:true})})});
 };
 
 const userSignup = async (req, res, next) => {
@@ -25,7 +37,7 @@ const userSignup = async (req, res, next) => {
 
     if (errors.isEmpty()) {
 
-      const { email, password, image, name, places } = req.body;
+      const { email, password, image, name} = req.body;
       let existingUser;
 
       try {
@@ -45,7 +57,7 @@ const userSignup = async (req, res, next) => {
         email,
         image: 'https://static.wikia.nocookie.net/thekaratekid/images/9/9e/John_Kreese_Karate_Kid.png/revision/latest?cb=20190430011315',
         password,
-        places
+        places:[]
       });
 
       try {
@@ -86,7 +98,7 @@ const userLogin = async (req, res, next) => {
       const error = new HttpError('Login failed - invalid email and/or password', 401);
       return next(error);
     } 
-    
+
   } else {
     const error = new HttpError('Login failed - invalid email and/or password', 401);
     return next(error);
