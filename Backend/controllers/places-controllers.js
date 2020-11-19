@@ -117,7 +117,7 @@ const createPlace = async (req, res, next) => {
     console.log(user);
 
     try {
-      
+
       const session = await mongoose.startSession();
       session.startTransaction();
       await createdPlace.save({session});
@@ -176,7 +176,7 @@ const deletePlace = async (req, res, next) => {
   let place;
 
   try {
-    place = await Place.findById(placeId);
+    place = await Place.findById(placeId).populate('creator');
   } catch (err) {
     const error = new HttpError(
       "Something went wrong - could not delete place",
@@ -185,19 +185,38 @@ const deletePlace = async (req, res, next) => {
     return next(error);
   }
 
-  try {
-    if (place) {
+  if(place){
+    try {
+
+      
+      const session = await mongoose.startSession();
+
+      session.startTransaction();
+
+      await place.creator.places.pull(place._id);
+
+      await place.creator.save({session});
+
       await place.remove();
+
+      await session.commitTransaction();
+
+    } catch (err) {
+      const error = new HttpError(
+        "Something went wrong - could not delete place",
+        500
+      );
+      return next(error);
     }
-  } catch (err) {
+  } else {
     const error = new HttpError(
-      "Something went wrong - could not delete place",
-      500
+      "Could not find a place for the provided ID",
+      404
     );
     return next(error);
   }
 
-  res.status(200).json({ message: "Deleted place." });
+  res.status(200).json({ message: `Deleted place ${place._id}` });
 };
 
 exports.updatePlace = updatePlace;
