@@ -8,7 +8,7 @@ const getUsers = async (req, res, next) => {
   let users;
 
   try {
-    users = await User.find({}, 'email name')
+    users = await User.find({}, 'name places image')
   } catch (err) {
     const error = new HttpError('Something went wrong - could not fetching users', 500);
     return next(error);
