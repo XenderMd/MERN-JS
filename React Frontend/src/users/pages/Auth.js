@@ -34,7 +34,8 @@ const Auth = () => {
 
     if (isLoginMode) {
       try {
-        const response = await sendRequest(
+
+        const responseData = await sendRequest(
           'http://localhost:5000/api/users/login',
           'POST',
           JSON.stringify({
@@ -45,14 +46,16 @@ const Auth = () => {
             'Content-Type': 'application/json'
           }
         );
-        
-        auth.login();
+
+        auth.login(responseData.user.id);
+
       } catch (err) {
         console.log(err);
       }
     } else {
       try {
-        const response = await sendRequest(
+
+        const responseData = await sendRequest(
           "http://localhost:5000/api/users/signup",
           "POST",
           JSON.stringify({
@@ -64,8 +67,9 @@ const Auth = () => {
             "Content-Type": "application/json",
           }
         );
+        
+        auth.login(responseData.user.id);
 
-        auth.login();
       } catch (err) {
         console.log(err);
       }
@@ -94,13 +98,9 @@ const Auth = () => {
     setIsLoginMode((prevMode) => !prevMode);
   };
 
-  const errorHandler = () => {
-    clearError();
-  };
-
   return (
     <React.Fragment>
-      <ErrorModal error={error} onClear={errorHandler} />
+      <ErrorModal error={error} onClear={clearError} />
       <Card className="authentication">
         {isLoading && <LoadingSpinner asOverlay />}
         <h1>Login Required</h1>

@@ -1,7 +1,12 @@
-import React, { useCallback, useReducer } from "react";
+import React, {useContext } from "react";
+import {useHistory} from 'react-router-dom';
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import { AuthContext } from '../../shared/context/auth-context';
+import { useHttpClient } from "../../shared/hooks/http-hook";
 
 import {
   VALIDATOR_MINLENGTH,
@@ -12,19 +17,51 @@ import "./PlaceForm.css";
 
 const NewPlace = () => {
 
+  const history = useHistory();
+  const auth=useContext(AuthContext);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+
   const [formState, inputHandler] = useForm({
     title: { value: "", isValid: false },
     description: { value: "", isValid: false },
     address: { value: "", isValid: false }
   }, false)
 
-  const placeSubmitHandler=event =>{
-      event.preventDefault();
-      console.log(formState.inputs);
+  const placeSubmitHandler= async (event) =>{
+      
+    event.preventDefault();
+
+    try {
+      const responseData = await sendRequest(
+        "http://localhost:5000/api/places/",
+        "POST",
+        JSON.stringify({
+          title: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+          address: formState.inputs.address.value,
+          creator: auth.userId,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+
+      history.push('/');
+
+    } catch (err) {
+       console.log(err);
+    }
+  }
+
+  const errorHandler = ()=>{
+    clearError();
   }
 
   return (
+    <React.Fragment>
+    <ErrorModal error={error} onClear={errorHandler}/>
     <form className="place-form" onSubmit={placeSubmitHandler}>
+    {isLoading && <LoadingSpinner asOverlay/>}
       <Input
         id="title"
         element="input"
@@ -54,6 +91,7 @@ const NewPlace = () => {
         ADD PLACE
       </Button>
     </form>
+    </React.Fragment>
   );
 };
 

@@ -14,8 +14,6 @@ const getUsers = async (req, res, next) => {
     return next(error);
   }
 
-
-
   res.status(200).json({users: users.map((user)=>{return user.toObject({getters:true})})});
 };
 
@@ -67,16 +65,17 @@ const userSignup = async (req, res, next) => {
 
 const userLogin = async (req, res, next) => {
 
+  let existingUser;
   const errors = validationResult(req);
 
   if(errors.isEmpty()){
 
     const { email, password } = req.body;
-
-    let existingUser;
-
+    
     try {
-     existingUser= await User.findOne({email});
+     
+      existingUser = await User.findOne({email}, 'name password');
+     
     } catch (err) {
       const error = new HttpError('Login failed - please try again later', 500);
       return next(error);
@@ -92,8 +91,7 @@ const userLogin = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({message:"Login succesful"});
-
+  res.status(200).json({user:existingUser.toObject({getters:true})});
 };
 
 exports.getUsers = getUsers;
