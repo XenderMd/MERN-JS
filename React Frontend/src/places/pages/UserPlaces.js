@@ -60,7 +60,7 @@ const UserPlaces = (props)=>{
 
     return(
         <React.Fragment>
-             {isLoading&&LoadingSpinner}
+             {isLoading&&<LoadingSpinner/>}
             <ErrorModal error={error} onClear={clearError}/>
             {!isLoading&&<PlaceList items={loadedPlaces}/>}
         </React.Fragment>

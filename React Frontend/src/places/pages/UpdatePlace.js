@@ -1,50 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, useHistory } from "react-router-dom";
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
 import Card from "../../shared/components/UIElements/Card";
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH,
 } from "../../shared/util/validators";
 import { useForm } from "../../shared/hooks/form-hook";
+import {useHttpClient} from '../../shared/hooks/http-hook';
+import { AuthContext } from '../../shared/context/auth-context';
 
 import "./PlaceForm.css";
 
-const DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous places in New York",
-    imageUrl:
-      "https://www.tripsavvy.com/thmb/dbsEKjGUVeS2vQ86qu2NaE14zHg=/3865x2174/smart/filters:no_upscale()/empire-state-building-at-sunset-171080501-59f9d0c6d088c000102668bb.jpg",
-    address: "20 W 34th St, New York, NY 10001, United States",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9856644,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Emp. State Building",
-    description: "One of the most famous places in New York",
-    imageUrl:
-      "https://www.tripsavvy.com/thmb/dbsEKjGUVeS2vQ86qu2NaE14zHg=/3865x2174/smart/filters:no_upscale()/empire-state-building-at-sunset-171080501-59f9d0c6d088c000102668bb.jpg",
-    address: "20 W 34th St, New York, NY 10001, United States",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9856644,
-    },
-    creator: "u2",
-  },
-];
-
 const UpdatePlace = (props) => {
-  const [isLoading, setIsLoading] = useState(true);
-
+  
+  const auth=useContext(AuthContext);
+  const history = useHistory();
   const placeId = useParams().placeId;
+  const [loadedPlace, setLoadedPlace]=useState(null);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -54,30 +32,52 @@ const UpdatePlace = (props) => {
     false
   );
 
-  const identifiedPlace = DUMMY_PLACES.find((place) => {
-    return place.id === placeId;
-  });
-
   useEffect(() => {
-    if (identifiedPlace) {
-      setFormData(
-        {
-          title: { value: identifiedPlace.title, isValid: true },
-          description: { value: identifiedPlace.description, isValid: true }
-        },
-        true
-      );
-    }
 
-    setIsLoading(false);
-  }, [setFormData, identifiedPlace]);
+    try {
+      const fetchPlace = async ()=>{
+        const responseData = await sendRequest(`http://localhost:5000/api/places/${placeId}`);
+        setLoadedPlace(responseData.place);
+        setFormData({
+          title:{
+            value:responseData.place.title,
+            isValid:true
+          },
+          description:{
+            value:responseData.place.description,
+            isValid:true
+          }
+        });
+      };
+      fetchPlace();
+      
+    } catch (err) {};
+    
+  }, [setFormData, placeId]);
 
-  const placeUpdateSubmitHandler = (event) => {
+  const placeUpdateSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log(formState);
+    
+    try {
+      const responseData = await sendRequest(
+        `http://localhost:5000/api/places/${placeId}`,
+        "PATCH",
+        JSON.stringify({
+          title: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+        }),
+        {
+          "Content-Type": "application/json",
+        }
+      );
+
+      history.push(`/${auth.userId}/places`);
+    
+    } catch (error) {}
+
   };
 
-  if (!identifiedPlace) {
+  if (!isLoading&&!loadedPlace) {
     return (
       <div className="center">
         <Card>
@@ -85,17 +85,20 @@ const UpdatePlace = (props) => {
         </Card>
       </div>
     );
-  }
+  };
 
   if (isLoading) {
     return (
-      <div>
-        <h2>Loading...</h2>
+      <div className="center">
+        <LoadingSpinner/>
       </div>
     );
-  }
+  };
 
+  
   return (
+    <React.Fragment>
+    <ErrorModal error={error} onClear={clearError}/>
     <form className="place-form" onSubmit={placeUpdateSubmitHandler}>
       <Input
         id="title"
@@ -105,8 +108,8 @@ const UpdatePlace = (props) => {
         validators={[VALIDATOR_REQUIRE()]}
         errorText="Please add a valid title."
         onInput={inputHandler}
-        initialValue={formState.inputs.title.value}
-        initialValid={formState.inputs.title.isValid}
+        initialValue={loadedPlace.title}
+        initialValid={true}
       ></Input>
       <Input
         id="description"
@@ -115,13 +118,14 @@ const UpdatePlace = (props) => {
         validators={[VALIDATOR_MINLENGTH(5)]}
         errorText="Please add a valid description (min 5 characters)."
         onInput={inputHandler}
-        initialValue={formState.inputs.description.value}
-        initialValid={formState.inputs.description.isValid}
+        initialValue={loadedPlace.description}
+        initialValid={true}
       ></Input>
       <Button type="submit" disabled={!formState.isValid}>
         UPDATE PLACE
       </Button>
     </form>
+    </React.Fragment>
   );
 };
 

@@ -32,6 +32,7 @@ const NewPlace = () => {
     event.preventDefault();
 
     try {
+
       const responseData = await sendRequest(
         "http://localhost:5000/api/places/",
         "POST",
@@ -45,6 +46,8 @@ const NewPlace = () => {
           "Content-Type": "application/json",
         }
       );
+
+      console.log(responseData);
 
       history.push('/');
 
