@@ -34,7 +34,7 @@ const getPlaceById = async (req, res, next) => {
 
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  let places;
+  let places = [];
 
   try {
     places = await Place.find({ creator: userId });
@@ -49,12 +49,10 @@ const getPlacesByUserId = async (req, res, next) => {
   }
 
   if (places.length === 0) {
-    return next(
-      new HttpError("Could not find places for the provided user id", 404)
-    );
+    return res.json({userPlaces: [], message:"There are no places for the provided userId"});
   }
 
-  res.json({userPlaces: places.map((place) => place.toObject({ getters: true }))});
+  return res.json({userPlaces: places.map((place) => place.toObject({ getters: true }))});
 };
 
 const createPlace = async (req, res, next) => {
