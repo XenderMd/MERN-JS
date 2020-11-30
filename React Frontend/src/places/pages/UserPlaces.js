@@ -42,7 +42,7 @@ const UserPlaces = (props)=>{
     return(
         <React.Fragment>
             <ErrorModal error={error} onClear={clearError}/>
-            <PlaceList items={loadedPlaces} onDelete={fetchPlaces}/>
+            <PlaceList userId = {userId} items={loadedPlaces} onDelete={fetchPlaces}/>
         </React.Fragment>
     )
 };

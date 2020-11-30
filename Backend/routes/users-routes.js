@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/', userControllers.getUsers);
 
-router.post('/signup',[check('name').not().isEmpty(), check('email').isEmail(), check('password').not().isEmpty()], userControllers.userSignup);
+router.post('/signup',[check('name').not().isEmpty(), check('email').isEmail(), check('password').isLength({min:6})], userControllers.userSignup);
 
 router.post('/login',[check('email').isEmail(), check('password').not().isEmpty()], userControllers.userLogin);
 

@@ -10,7 +10,6 @@ import {useHttpClient} from '../../shared/hooks/http-hook';
 
 
 import "./PlaceItem.css";
-import Auth from "../../users/pages/Auth";
 
 const PlaceItem = (props) => {
 
@@ -88,8 +87,8 @@ const PlaceItem = (props) => {
             <Button onClick={openMapHandler} inverse>
               VIEW ON MAP
             </Button>
-            {auth.isLoggedIn &&<Button to={`/places/${props.id}`}>EDIT</Button>}
-            {auth.isLoggedIn && <Button danger onClick={showDeleteWarningHandler}>DELETE</Button>}
+            {auth.isLoggedIn && auth.userId===props.creatorId && <Button to={`/places/${props.id}`}>EDIT</Button>}
+            {auth.isLoggedIn && auth.userId===props.creatorId && <Button danger onClick={showDeleteWarningHandler}>DELETE</Button>}
           </div>
         </Card>
       </li>
