@@ -20,9 +20,6 @@ const UsersList = (props) => {
   return (
     <ul className="users-list">
       {props.items.map((user) => {
-        
-        console.log(user.image);
-
         return (
           <UserItem
             key={user.id}

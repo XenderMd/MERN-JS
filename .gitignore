@@ -26,3 +26,4 @@ Express Refresher/node_modules/
 Backend/node_modules/
 Backend/util/keys.env
 React Frontend/src/shared/util/keys.env
+Backend/uploads/images/

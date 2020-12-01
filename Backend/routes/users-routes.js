@@ -9,13 +9,17 @@ const router = express.Router();
 router.get("/", userControllers.getUsers);
 
 router.post(
-  "/signup",
-  fileUpload.single("image"),
-  [
-    check("name").not().isEmpty(),
-    check("email").isEmail(),
-    check("password").isLength({ min: 6 }),
-  ],
+    '/signup',
+    fileUpload.single('image'),
+    [
+      check('name')
+        .not()
+        .isEmpty(),
+      check('email')
+        .normalizeEmail()
+        .isEmail(),
+      check('password').isLength({ min: 6 })
+    ],
   userControllers.userSignup
 );
 
@@ -26,3 +30,4 @@ router.post(
 );
 
 module.exports = router;
+

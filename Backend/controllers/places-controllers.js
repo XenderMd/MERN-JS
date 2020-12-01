@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const mongoose = require('mongoose');
+const fs = require('fs');
 
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
@@ -75,8 +76,7 @@ const createPlace = async (req, res, next) => {
       address,
       creator,
       location: coordinates,
-      image:
-        "https://i.pinimg.com/280x280_RS/dc/f5/33/dcf533f965c3ad3315ba7f2a1c8542c4.jpg",
+      image:req.file.path,
     });
 
     let user;
@@ -120,6 +120,7 @@ const createPlace = async (req, res, next) => {
 
     res.status(201).json({place: createdPlace.toObject({getters:true})});
   } else {
+    console.log(errors);
     return next(new HttpError("Invalid inputs - please check your data", 422));
   }
 };
@@ -171,9 +172,11 @@ const deletePlace = async (req, res, next) => {
   }
 
   if(place){
+
+    const imagePath = place.image;
+
     try {
 
-      
       const session = await mongoose.startSession();
 
       session.startTransaction();
@@ -193,6 +196,13 @@ const deletePlace = async (req, res, next) => {
       );
       return next(error);
     }
+
+    fs.unlink(imagePath, (error)=>{
+      if(error){
+        console.log(error);
+      }
+    });
+
   } else {
     const error = new HttpError(
       "Could not find a place for the provided ID",

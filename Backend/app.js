@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const fs = require ('fs');
+const path = require('path');
 
 const environment = require('dotenv').config({path: __dirname + `\\keys.env`});
 const placesRouter = require("./routes/places-routes");
@@ -10,6 +12,8 @@ const HttpError = require("./models/http-error");
 const app = express();
 
 app.use(bodyParser.json());
+
+app.use("/uploads/images", express.static(path.join('uploads', 'images')));
 
 app.use((req,res,next)=>{
 
@@ -29,6 +33,15 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+
+  if(req.file){
+    fs.unlink(req.file.path, (err)=>{
+      if(err){console.log(err);};
+    });
+  };
+
+  console.log(error);
+
   if (res.headerSent) {
     return next(error);
   }
