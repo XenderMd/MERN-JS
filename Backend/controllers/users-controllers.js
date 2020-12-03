@@ -97,10 +97,26 @@ const userLogin = async (req, res, next) => {
       return next(error);
     }
 
-    if(!existingUser||existingUser.password!==password){
+    if(!existingUser){
       const error = new HttpError('Login failed - invalid email and/or password', 401);
       return next(error);
-    } 
+    }
+
+    let isValidPassword;
+
+    try {
+
+      isValidPassword = await bcrypt.compare(password, existingUser.password);
+      
+    } catch (err) {
+      const error = new HttpError('Login failed - please try again later', 500);
+      return next(error);
+    }
+
+    if (!isValidPassword){
+      const error = new HttpError('Login failed - invalid email and/or password', 401);
+      return next(error);
+    }
 
   } else {
     const error = new HttpError('Login failed - invalid email and/or password', 401);
