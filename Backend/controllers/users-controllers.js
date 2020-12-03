@@ -1,8 +1,11 @@
 const {validationResult}=require('express-validator');
 const bcrypt = require ('bcrypt');
+var jwt = require('jsonwebtoken');
 
 const HttpError = require("../models/http-error");
 const User = require('../models/user');
+
+const privateKey = 'bo$$debo$$';
 
 const getUsers = async (req, res, next) => {
 
@@ -66,8 +69,11 @@ const userSignup =async (req, res, next) => {
     places: []
   });
 
+  let token;
+
   try {
     await createdUser.save();
+    token = jwt.sign({userId:createdUser.id, email:createdUser.email}, privateKey, {expiresIn:'1h'});
   } catch (err) {
     const error = new HttpError(
       'Signing up failed, please try again later.',
@@ -76,11 +82,13 @@ const userSignup =async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  res.status(201).json({ userId: createdUser.id, token });
 };
 
 const userLogin = async (req, res, next) => {
 
+  let token;
+  let isValidPassword;
   let existingUser;
   const errors = validationResult(req);
 
@@ -102,8 +110,6 @@ const userLogin = async (req, res, next) => {
       return next(error);
     }
 
-    let isValidPassword;
-
     try {
 
       isValidPassword = await bcrypt.compare(password, existingUser.password);
@@ -116,6 +122,8 @@ const userLogin = async (req, res, next) => {
     if (!isValidPassword){
       const error = new HttpError('Login failed - invalid email and/or password', 401);
       return next(error);
+    } else {
+      token = jwt.sign({userId:existingUser.id, email:existingUser.email}, privateKey, {expiresIn:'1h'});
     }
 
   } else {
@@ -123,7 +131,7 @@ const userLogin = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({user:existingUser.toObject({getters:true})});
+  res.status(200).json({userId:existingUser.id, token});
 };
 
 exports.getUsers = getUsers;
