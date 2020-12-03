@@ -17,16 +17,19 @@ import UserPlaces from "./places/pages/UserPlaces";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
 
-  const login = useCallback((id) => {
-    setIsLoggedIn(true);
+  const login = useCallback((id, token) => {
+    setToken(token);
+    setIsLoggedIn(!!token);
     setUserId(id);
   }, []);
 
   const logout = useCallback(() => {
+    setToken(null);
     setIsLoggedIn(false);
-    setUserId(null)
+    setUserId(null);
   }, []);
 
   let routes;
@@ -71,7 +74,7 @@ const App = () => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: isLoggedIn, login: login, logout: logout, userId:userId }}
+      value={{ isLoggedIn: isLoggedIn, login: login, logout: logout, userId:userId, token:token }}
     >
       <Router>
         <MainNavigation />

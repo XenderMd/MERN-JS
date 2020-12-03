@@ -99,8 +99,6 @@ const createPlace = async (req, res, next) => {
       return next(error);
     }
 
-    console.log(user);
-
     try {
 
       const session = await mongoose.startSession();
@@ -134,6 +132,13 @@ const updatePlace = async (req, res, next) => {
     try {
       place = await Place.findById(placeId);
       const { title, description } = req.body;
+      const requestorId = req.userData.userId;
+
+      if(requestorId!==place.creator.toString()){
+          const error = new HttpError('You are not allowed to edit this place', 401);
+          return next(error);
+      }
+
       place.title = title;
       place.description = description;
     } catch (err) {
@@ -163,6 +168,13 @@ const deletePlace = async (req, res, next) => {
 
   try {
     place = await Place.findById(placeId).populate('creator');
+
+    const requestorId = req.userData.userId;
+    if(requestorId!==place.creator.id){
+        const error = new HttpError('You are not allowed to delete this place', 401);
+        return next(error);
+    }
+
   } catch (err) {
     const error = new HttpError(
       "Something went wrong - could not delete place",
