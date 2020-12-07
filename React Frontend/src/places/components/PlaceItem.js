@@ -40,7 +40,7 @@ const PlaceItem = (props) => {
     
     try {
 
-      const ResponseData = await sendRequest(`http://localhost:5000/api/places/${props.id}`, "DELETE", null, {"authorization": 'Bearer ' + auth.token});
+      const ResponseData = await sendRequest(process.env.REACT_APP_BACKEND_URL + `/places/${props.id}`, "DELETE", null, {"authorization": 'Bearer ' + auth.token});
       props.onDelete(props.creatorId);  
 
     } catch (err) {
@@ -80,7 +80,7 @@ const PlaceItem = (props) => {
         {isLoading && <LoadingSpinner asOverlay/>}
         <Card className="place-item__content">
           <div className="place-item__image">
-            <img src={`http://localhost:5000/${props.image}`} alt={props.title}></img>
+            <img src={process.env.REACT_APP_RESOURCE_URL + `/${props.image}`} alt={props.title}></img>
           </div>
           <div className="place-item__info">
             <h2>{props.title}</h2>
