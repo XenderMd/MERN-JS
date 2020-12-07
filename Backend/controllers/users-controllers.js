@@ -5,7 +5,6 @@ var jwt = require('jsonwebtoken');
 const HttpError = require("../models/http-error");
 const User = require('../models/user');
 
-const privateKey = 'bo$$debo$$';
 
 const getUsers = async (req, res, next) => {
 
@@ -73,7 +72,7 @@ const userSignup =async (req, res, next) => {
 
   try {
     await createdUser.save();
-    token = jwt.sign({userId:createdUser.id, email:createdUser.email}, privateKey, {expiresIn:'1h'});
+    token = jwt.sign({userId:createdUser.id, email:createdUser.email}, process.env.JWT_KEY, {expiresIn:'1h'});
   } catch (err) {
     const error = new HttpError(
       'Signing up failed, please try again later.',
@@ -123,7 +122,7 @@ const userLogin = async (req, res, next) => {
       const error = new HttpError('Login failed - invalid email and/or password', 401);
       return next(error);
     } else {
-      token = jwt.sign({userId:existingUser.id, email:existingUser.email}, privateKey, {expiresIn:'1h'});
+      token = jwt.sign({userId:existingUser.id, email:existingUser.email}, process.env.JWT_KEY, {expiresIn:'1h'});
     }
 
   } else {

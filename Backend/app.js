@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 const fs = require ('fs');
 const path = require('path');
 
-const environment = require('dotenv').config({path: __dirname + `\\keys.env`});
 const placesRouter = require("./routes/places-routes");
 const userRouter = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
@@ -50,6 +49,6 @@ app.use((error, req, res, next) => {
     .json({ message: error.message || "An uknown error has occured" });
 });
 
-mongoose.connect(`mongodb+srv://placesApp:${process.env.mongoDBPassword}@myapp.q4c3t.mongodb.net/PlacesDB?retryWrites=true&w=majority`)
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@myapp.q4c3t.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`)
 .then(()=>{app.listen(5000);})
 .catch((err)=>{console.log(err)});
